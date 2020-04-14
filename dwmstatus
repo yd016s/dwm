@@ -1,0 +1,70 @@
+#!/bin/sh
+
+SEP="|"
+WLAN="wlp5s0"
+ETHO="enp0s3"
+
+print_uptime()
+{
+	printf 'µ:'
+	uptime -p | cut -c 4- | tr -d ',' | sed 's/ hour\?/h/; s/ minutes/m/'
+}
+
+print_wireless()
+{
+		printf "W:"
+
+		state="$(cat /sys/class/net/${WLAN}/operstate)"
+
+		case "$state" in
+			up) echo "up";;
+			down) echo "dn";;
+			*) echo "*";;
+		esac
+}
+
+print_battery()
+{
+	if [ -d /sys/class/power_supply/BAT? ];then
+	{
+		printf "B:"
+		
+		for i in /sys/class/power_supply/BAT?/capacity;
+		do
+			cap=$(cat "$i")
+			case "$cap" in
+				[0-15]) echo "${cap}!!";;
+				*) echo "${cap}%";;
+			esac
+		done
+	}
+	else
+	{
+		return 1;
+	}
+	fi
+}
+
+print_date()
+{
+	date '+%a %H:%M %d/%m/%y'
+}
+
+print_backlight()
+{
+	return 1;
+}
+
+#prints outputs of specified modules
+status() 
+{
+	for i in print_{uptime,battery,wireless,date};do
+		"$i" && echo "${SEP}"
+	done
+}
+
+while true;do
+	xsetroot -name "$(status | paste -s | sed 's/\s/ /g; s/..$//')"
+
+	sleep 1m;
+done
