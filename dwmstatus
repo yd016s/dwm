@@ -27,7 +27,7 @@ print_battery()
 {
 	if [ -d /sys/class/power_supply/BAT? ];then
 	{
-		printf "B:"
+		printf "≔:"
 		
 		for i in /sys/class/power_supply/BAT?/capacity;
 		do
